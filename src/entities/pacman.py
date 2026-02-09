@@ -1,7 +1,7 @@
 import pygame
 from src.utils.constants import TILE_SIZE, YELLOW
 
-class PacMac(pygame.sprite.Sprite):
+class PacMan(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
