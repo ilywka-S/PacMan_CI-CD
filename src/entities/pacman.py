@@ -29,5 +29,13 @@ class Pacman(pygame.sprite.Sprite):
         elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.next_direction = pygame.Vector2(0, 1)
 
+    def move(self):
+        if self.next_direction != pygame.Vector2(0, 0):
+            self.direction = self.next_direction
+
+        self.pos += self.direction * self.speed
+        self.rect.topleft = self.pos.x, self.pos.y
+
     def update(self):
-        pass
+        self.get_input()
+        self.move()
