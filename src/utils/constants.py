@@ -4,3 +4,4 @@ TILE_SIZE = 16
 
 BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
+PACMAN_SPEED = 2
