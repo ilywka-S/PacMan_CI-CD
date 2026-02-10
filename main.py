@@ -1,5 +1,5 @@
 import pygame
-from src.utils.constants import WIDTH, HEIGHT, TILE_SIZE, BLACK
+from src.utils.constants import WIDTH, HEIGHT, TILE_SIZE, BLACK, FPS
 from src.map.testMap import Map
 from src.entities.pacman import Pacman
 from src.entities.ghost import Pinky,  Ghost
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     player = Pacman(TILE_SIZE, TILE_SIZE, game_map.walls)
-
+    
     running = True
     while running:
         for event in pygame.event.get():
@@ -33,7 +33,6 @@ if __name__ == "__main__":
             ghost.update()
 
         pygame.display.flip()
-
-        clock.tick(60)
+        clock.tick(FPS)
 
     pygame.quit()
