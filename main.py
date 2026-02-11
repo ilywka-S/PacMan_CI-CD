@@ -6,6 +6,21 @@ from src.entities.ghost import Pinky, Inky, Clyde, Sue
 
 game_map = Map()
 
+def play_death_animation(_clock, _player):
+    for frame in _player.animations["death"]:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        screen.fill(BLACK)
+        game_map.draw_map(screen)
+        ghosts_group.draw(screen)
+        screen.blit(frame, player.rect)
+        pygame.display.flip()
+
+        _clock.tick(10)
+
 if __name__ == "__main__":
     pygame.init() 
 
@@ -35,7 +50,8 @@ if __name__ == "__main__":
 
         if collision:
             player.lives -= 1
-            pygame.time.delay(1000)
+            play_death_animation(clock, player)
+            pygame.time.delay(300)
 
             if player.lives <= 0:
                 running = False
