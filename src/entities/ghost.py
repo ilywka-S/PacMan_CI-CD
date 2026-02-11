@@ -139,6 +139,12 @@ class Ghost(pygame.sprite.Sprite, ABC):
             for i in range(0, 4):
                 dir = pygame.Vector2(directions[i])
                 y, x = self.future_pos(pos, dir)
+                
+                if y > len(self.game_map.level[0])-1:
+                    y = len(self.game_map.level[0])-1
+                if y < 0:
+                    y = 0
+        
                 if self.game_map.level[x][y] != 0 or curr_dir == -dir:
                     continue
                 else:
