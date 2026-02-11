@@ -14,8 +14,10 @@ class Pacman(pygame.sprite.Sprite):
         self.direction = pygame.Vector2(0, 0)
         self.next_direction = pygame.Vector2(0, 0)
         self.speed = PACMAN_SPEED
+        self.lives = 3
 
         self.pos = pygame.Vector2(self.rect.topleft)
+        self.start_pos = self.pos.copy()
 
     def get_input(self):
         keys = pygame.key.get_pressed()
@@ -82,6 +84,14 @@ class Pacman(pygame.sprite.Sprite):
             self.rect.topleft = self.pos.x, self.pos.y
         else:
             self.rect.topleft = self.pos.x, self.pos.y
+
+    def reset_position(self):
+        self.rect.topleft = self.start_pos.copy()
+
+        self.direction = pygame.Vector2(0, 0)
+        self.next_direction = pygame.Vector2(0, 0)
+
+        self.pos = self.start_pos.copy()
 
     def update(self):
         self.get_input()
