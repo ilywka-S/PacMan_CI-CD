@@ -19,6 +19,8 @@ if __name__ == "__main__":
         Clyde(game_map, player),
         Sue(game_map, player)
     ]
+
+    ghosts_group = pygame.sprite.Group(ghosts)
     
     running = True
     while running:
@@ -27,13 +29,26 @@ if __name__ == "__main__":
                 running = False
 
         player.update()
-        
+        ghosts_group.update()
+
+        collision = pygame.sprite.spritecollide(player, ghosts_group, False)
+
+        if collision:
+            player.lives -= 1
+            pygame.time.delay(1000)
+
+            if player.lives <= 0:
+                running = False
+            else:
+                player.reset_position()
+
+                for ghost in ghosts_group:
+                    ghost.reset_position()
+
         screen.fill(BLACK)
         game_map.draw_map(screen)
         screen.blit(player.image, player.rect)
-        for ghost in ghosts:
-            screen.blit(ghost.image, ghost.pos)
-            ghost.update()
+        ghosts_group.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
