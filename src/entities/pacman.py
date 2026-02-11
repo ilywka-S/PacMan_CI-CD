@@ -90,7 +90,7 @@ class Pacman(pygame.sprite.Sprite):
             self.rect.topleft = self.pos.x, self.pos.y
 
     def import_assets(self):
-        path = 'src/assets/pacman/pacman.png'
+        path = 'src/assets/pacman/pacman_move.png'
         self.animations = {}
 
         try:
