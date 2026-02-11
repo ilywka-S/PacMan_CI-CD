@@ -3,6 +3,7 @@ from src.utils.constants import WIDTH, HEIGHT, TILE_SIZE, BLACK, FPS
 from src.map.testMap import Map
 from src.entities.pacman import Pacman
 from src.entities.ghost import Pinky, Inky, Clyde, Sue
+from src.map.randomized_map import RandomMap
 
 game_map = Map()
 
