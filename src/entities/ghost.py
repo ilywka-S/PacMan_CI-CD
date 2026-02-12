@@ -11,8 +11,9 @@ class Ghost(pygame.sprite.Sprite, ABC):
     def __init__(self, game_map, pacman):
         super().__init__()
 
-        self.model = pygame.Rect(9*TILE_SIZE, 12*TILE_SIZE, TILE_SIZE, TILE_SIZE)
-        self.pos = pygame.Vector2(self.model.topleft)
+        self.rect = pygame.Rect(9*TILE_SIZE, 12*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+        self.pos = pygame.Vector2(self.rect.topleft)
+        self.start_pos = pygame.Vector2(self.rect.topleft)
 
         self.direction = pygame.Vector2(0, -1)
         self.next_direction = pygame.Vector2(0, 0)
@@ -33,7 +34,7 @@ class Ghost(pygame.sprite.Sprite, ABC):
         pass
 
     def check_collision(self, direction):
-        next_pos = self.model.copy()
+        next_pos = self.rect.copy()
         next_pos.move_ip(direction * GHOST_SPEED)
 
         if next_pos.collidelist(self.game_map.walls) > -1:
@@ -56,7 +57,7 @@ class Ghost(pygame.sprite.Sprite, ABC):
         return self.sprite.subsurface((self.sprite_start, self.sprite_width))
 
     def is_centered(self):
-        center_x, center_y = self.model.center
+        center_x, center_y = self.rect.center
 
         tile_center_x = (center_x // TILE_SIZE) * TILE_SIZE + TILE_SIZE // 2    
         tile_center_y = (center_y // TILE_SIZE) * TILE_SIZE + TILE_SIZE // 2
@@ -184,6 +185,14 @@ class Ghost(pygame.sprite.Sprite, ABC):
             pos = pygame.Vector2(predict_pos[0]*TILE_SIZE, predict_pos[1]*TILE_SIZE)
         return predict_pos[1], predict_pos[0]
 
+    def reset_position(self):
+        self.pos = self.start_pos.copy()
+
+        self.rect.topleft = (int(self.pos.x), int(self.pos.y))
+
+        self.direction = pygame.Vector2(0, -1)
+        self.next_direction = pygame.Vector2(0, 0)
+
 #Pinky, Inky, Sue, Clyde
 class Pinky(Ghost):
     sprite = pygame.image.load(f'src/assets/ghosts/pink_ghost/pink_ghost.png')
@@ -204,18 +213,18 @@ class Pinky(Ghost):
                 if not self.check_collision(self.next_direction):
                     self.direction = self.next_direction
 
-        if self.model.right < 0:
+        if self.rect.right < 0:
             self.pos.x = WIDTH
-            self.model.x = WIDTH
-        elif self.model.left > WIDTH:
-            self.pos.x = -self.model.width
-            self.model.x = -self.model.width
+            self.rect.x = WIDTH
+        elif self.rect.left > WIDTH:
+            self.pos.x = -self.rect.width
+            self.rect.x = -self.rect.width
 
         if not self.check_collision(self.direction):
-            self.pos += self.direction * GHOST_SPEED
-            self.model.topleft = self.pos.x, self.pos.y
+            self.pos += self.direction * GHOST_SPEED * 2 #!!! Для тестування, потім замінити !!!
+            self.rect.topleft = self.pos.x, self.pos.y
         else:
-            self.model.topleft = self.pos.x, self.pos.y
+            self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
         self.move()
@@ -239,18 +248,18 @@ class Inky(Ghost):
                 if not self.check_collision(self.next_direction):
                     self.direction = self.next_direction
 
-        if self.model.right < 0:
+        if self.rect.right < 0:
             self.pos.x = WIDTH
-            self.model.x = WIDTH
-        elif self.model.left > WIDTH:
-            self.pos.x = -self.model.width
-            self.model.x = -self.model.width
+            self.rect.x = WIDTH
+        elif self.rect.left > WIDTH:
+            self.pos.x = -self.rect.width
+            self.rect.x = -self.rect.width
 
         if not self.check_collision(self.direction):
             self.pos += self.direction * GHOST_SPEED
-            self.model.topleft = self.pos.x, self.pos.y
+            self.rect.topleft = self.pos.x, self.pos.y
         else:
-            self.model.topleft = self.pos.x, self.pos.y
+            self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
         self.move()
@@ -275,18 +284,18 @@ class Sue(Ghost):
                 if not self.check_collision(self.next_direction):
                     self.direction = self.next_direction
 
-        if self.model.right < 0:
+        if self.rect.right < 0:
             self.pos.x = WIDTH
-            self.model.x = WIDTH
-        elif self.model.left > WIDTH:
-            self.pos.x = -self.model.width
-            self.model.x = -self.model.width
+            self.rect.x = WIDTH
+        elif self.rect.left > WIDTH:
+            self.pos.x = -self.rect.width
+            self.rect.x = -self.rect.width
 
         if not self.check_collision(self.direction):
             self.pos += self.direction * GHOST_SPEED
-            self.model.topleft = self.pos.x, self.pos.y
+            self.rect.topleft = self.pos.x, self.pos.y
         else:
-            self.model.topleft = self.pos.x, self.pos.y
+            self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
         self.move()
@@ -310,18 +319,18 @@ class Clyde(Ghost):
                     self.direction = pygame.Vector2(directions[new_dir])
             self.next_direction = self.direction
 
-        if self.model.right < 0:
+        if self.rect.right < 0:
             self.pos.x = WIDTH
-            self.model.x = WIDTH
-        elif self.model.left > WIDTH:
-            self.pos.x = -self.model.width
-            self.model.x = -self.model.width
+            self.rect.x = WIDTH
+        elif self.rect.left > WIDTH:
+            self.pos.x = -self.rect.width
+            self.rect.x = -self.rect.width
 
         if not self.check_collision(self.direction):
             self.pos += self.direction * GHOST_SPEED
-            self.model.topleft = self.pos.x, self.pos.y
+            self.rect.topleft = self.pos.x, self.pos.y
         else:
-            self.model.topleft = self.pos.x, self.pos.y
+            self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
         self.move()
