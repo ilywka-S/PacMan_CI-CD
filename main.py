@@ -4,6 +4,7 @@ from src.map.testMap import Map
 from src.entities.pacman import Pacman
 from src.entities.ghost import Pinky, Inky, Clyde, Sue
 from src.map.randomized_map import RandomMap
+from src.game_objects.object_manager import ObjectManager
 
 game_map = Map()
 
@@ -37,6 +38,7 @@ if __name__ == "__main__":
     ]
 
     ghosts_group = pygame.sprite.Group(ghosts)
+    objects = ObjectManager(game_map)
     
     running = True
     while running:
@@ -64,6 +66,8 @@ if __name__ == "__main__":
 
         screen.fill(BLACK)
         game_map.draw_map(screen)
+        objects.draw_objects(screen)
+        objects.spawn_boost()
         screen.blit(player.image, player.rect)
         ghosts_group.draw(screen)
 
