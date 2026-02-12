@@ -7,6 +7,7 @@ from src.utils.constants import TILE_SIZE, GHOST_SPEED, WIDTH, FPS
 import random
 
 class Ghost(pygame.sprite.Sprite, ABC):
+    directions = [(-1, 0), (0, -1), (0, 1), (1, 0)]
     def __init__(self, game_map, pacman):
         super().__init__()
 
@@ -41,7 +42,6 @@ class Ghost(pygame.sprite.Sprite, ABC):
         
         return False
 
-    
     def change_sprite(self):
         tick = (pygame.time.get_ticks()//(FPS*4))%2
 
@@ -69,12 +69,43 @@ class Ghost(pygame.sprite.Sprite, ABC):
 
         return dist_x <= tolerance and dist_y <= tolerance
     
-    def bfs_pacman(self, matrix, start, goal):
+    def bfs_original(self, matrix, start, goal):
         rows, cols = len(matrix), len(matrix[0])
         queue = deque([start])
         visited = {start: None}
         
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        while queue:
+            current = queue.popleft()
+
+            if current == goal:
+                return self.reconstruct_path(visited, goal)
+                
+            for dr, dc in self.directions:
+                r, c = current[0] + dr, current[1] + dc
+                
+                if r < 0:
+                    r = rows - 1
+                elif r >= rows:
+                    r = 0
+                
+                if c < 0:
+                    c = cols - 1
+                elif c >= cols:
+                    c = 0
+                
+                neighbor = (r, c)
+                
+                if matrix[r][c] == 0 and neighbor not in visited:
+                    visited[neighbor] = current
+                    queue.append(neighbor)
+        
+        return None  
+
+    
+    def bfs_dodge_pacman(self, matrix, start, goal):
+        rows, cols = len(matrix), len(matrix[0])
+        queue = deque([start])
+        visited = {start: None}
 
         while queue:
             current = queue.popleft()
@@ -82,14 +113,24 @@ class Ghost(pygame.sprite.Sprite, ABC):
             if current == goal:
                 return self.reconstruct_path(visited, goal)
                 
-            for dr, dc in directions:
-                neighbor = (current[0] + dr, current[1] + dc)
-                r, c = neighbor
-
-                if 0 <= r < rows and 0 <= c < cols:
-                    if matrix[r][c] == 0 and neighbor not in visited:
-                        visited[neighbor] = current
-                        queue.append(neighbor)
+            for dr, dc in self.directions:
+                r, c = current[0] + dr, current[1] + dc
+                
+                if r < 0:
+                    r = rows - 1
+                elif r >= rows:
+                    r = 0
+                
+                if c < 0:
+                    c = cols - 1
+                elif c >= cols:
+                    c = 0
+                
+                neighbor = (r, c)
+                
+                if matrix[r][c] == 0 and pygame.Vector2(c*TILE_SIZE, r*TILE_SIZE) != self.pacman.pos and neighbor not in visited:
+                    visited[neighbor] = current
+                    queue.append(neighbor)
         
         return None  
 
@@ -99,23 +140,44 @@ class Ghost(pygame.sprite.Sprite, ABC):
         while curr is not None:
             path.append(curr)
             curr = visited[curr]
-        dir = []
+        
+        dir_list = []
+
         for i in range(len(path)-1):
-            dir.append((path[i][1]-path[i+1][1], path[i][0]-path[i+1][0]))
-        return dir[::-1]
+            target = path[i]
+            source = path[i+1]
+            
+            dy = target[0] - source[0]
+            dx = target[1] - source[1]
+
+            if dy > 1:  dy = -1 
+            elif dy < -1: dy = 1 
+            
+            if dx > 1:  dx = -1 
+            elif dx < -1: dx = 1 
+
+            dir_list.append((dx, dy))
+            
+        return dir_list[::-1]
 
     def future_pos(self, pos, dir):
         return int(pos[0])//TILE_SIZE + int(dir[1]), int(pos[1])//TILE_SIZE + int(dir[0])
     
-    def predict_future_position(self):
+    def predict_future_position(self, directions):
         dir = self.pacman.direction
         pos = self.pacman.pos
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
         for _ in range(1, 5):
+            curr_dir = dir
             for i in range(0, 4):
+                dir = pygame.Vector2(directions[i])
                 y, x = self.future_pos(pos, dir)
-                if self.game_map.level[x][y] != 0:
-                    dir = pygame.Vector2(directions[i])
+                
+                if y > len(self.game_map.level[0])-1:
+                    y = len(self.game_map.level[0])-1
+                if y < 0:
+                    y = 0
+        
+                if self.game_map.level[x][y] != 0 or curr_dir == -dir:
                     continue
                 else:
                     break
@@ -143,7 +205,7 @@ class Pinky(Ghost):
 
     def move(self):
         if self.is_centered():
-            path = self.bfs_pacman(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (self.predict_future_position()))
+            path = self.bfs_original(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (self.predict_future_position(self.directions)))
             if path is not None and len(path) > 0:
                 self.next_direction = pygame.Vector2(path[0])
                 
@@ -178,7 +240,7 @@ class Inky(Ghost):
 
     def move(self):
         if self.is_centered():
-            path = self.bfs_pacman(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (self.predict_future_position()))
+            path = self.bfs_dodge_pacman(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (self.predict_future_position(self.directions[::-1])))
             if path is not None and len(path) > 0:
                 self.next_direction = pygame.Vector2(path[0])
                 
@@ -214,7 +276,7 @@ class Sue(Ghost):
 
     def move(self):
         if self.is_centered():
-            path = self.bfs_pacman(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (int(self.pacman.pos[1])//TILE_SIZE, int(self.pacman.pos[0])//TILE_SIZE))
+            path = self.bfs_original(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (int(self.pacman.pos[1])//TILE_SIZE, int(self.pacman.pos[0])//TILE_SIZE))
             if path is not None and len(path) > 0:
                 self.next_direction = pygame.Vector2(path[0])
                 
