@@ -1,8 +1,9 @@
 import pygame
-from src.utils.constants import TILE_SIZE, YELLOW, PACMAN_SPEED, WIDTH
+from src.utils.constants import TILE_SIZE, PACMAN_SPEED, WIDTH
+import src.entities.entity as entity
 
 class Pacman(pygame.sprite.Sprite):
-    def __init__(self, x, y, walls):
+    def __init__(self, x, y, game_map):
         super().__init__()
         self.import_assets()
 
@@ -14,7 +15,7 @@ class Pacman(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
 
-        self.walls = walls
+        self.game_map = game_map
         self.direction = pygame.Vector2(0, 0)
         self.next_direction = pygame.Vector2(0, 0)
         self.speed = PACMAN_SPEED
@@ -35,37 +36,15 @@ class Pacman(pygame.sprite.Sprite):
         elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.next_direction = pygame.Vector2(0, 1)
 
-    def check_collision(self, direction):
-        next_rect = self.rect.copy()
-        next_rect.move_ip(direction * self.speed)
-
-        if next_rect.collidelist(self.walls) > -1:
-            return True
-        
-        return False
-    
-    def is_centered(self):
-        center_x, center_y = self.rect.center
-
-        tile_center_x = (center_x // TILE_SIZE) * TILE_SIZE + TILE_SIZE // 2    
-        tile_center_y = (center_y // TILE_SIZE) * TILE_SIZE + TILE_SIZE // 2
-
-        dist_x = abs(center_x - tile_center_x)
-        dist_y = abs(center_y - tile_center_y)
-
-        tolerance = self.speed
-
-        return dist_x <= tolerance and dist_y <= tolerance
-
     def move(self):
         if self.next_direction != pygame.Vector2(0, 0):
             if self.next_direction == -self.direction:
                 self.direction = self.next_direction
                 self.next_direction = pygame.Vector2(0, 0)
 
-            elif self.is_centered():
+            elif entity.is_centered(self):
                 if self.direction != self.next_direction:
-                    if not self.check_collision(self.next_direction):
+                    if not entity.check_collision(self, self.next_direction):
                         current_tile_x = (self.rect.centerx // TILE_SIZE) * TILE_SIZE
                         current_tile_y = (self.rect.centery // TILE_SIZE) * TILE_SIZE
 
@@ -83,7 +62,7 @@ class Pacman(pygame.sprite.Sprite):
             self.pos.x = -self.rect.width
             self.rect.x = -self.rect.width
 
-        if not self.check_collision(self.direction):
+        if not entity.check_collision(self, self.direction):
             self.pos += self.direction * self.speed
             self.rect.topleft = self.pos.x, self.pos.y
         else:
