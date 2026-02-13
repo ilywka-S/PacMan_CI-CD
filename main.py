@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
-    player = Pacman(TILE_SIZE, TILE_SIZE, game_map.walls)
+    player = Pacman(TILE_SIZE, TILE_SIZE, game_map)
 
     ghosts = [ 
         Pinky(game_map, player),
