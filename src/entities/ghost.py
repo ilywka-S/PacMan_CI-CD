@@ -15,6 +15,8 @@ class Ghost(pygame.sprite.Sprite, ABC):
         self.rect = pygame.Rect(9*TILE_SIZE, 12*TILE_SIZE, TILE_SIZE, TILE_SIZE)
         self.pos = pygame.Vector2(self.rect.topleft)
         self.start_pos = pygame.Vector2(self.rect.topleft)
+        self.x = 1
+        self.y = 1
 
         self.direction = pygame.Vector2(0, -1)
         self.next_direction = pygame.Vector2(0, 0)
@@ -290,14 +292,20 @@ class Clyde(Ghost):
         return self.change_sprite()
     
     def move(self):
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        new_dir = random.randint(0, 3)
+        path = self.bfs_original(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (self.x, self.y))
 
-        if (entity.is_centered(self)):
-            if(entity.check_collision(self, self.direction) or (not entity.check_collision(self, pygame.Vector2(directions[new_dir])) and pygame.Vector2(directions[new_dir]) != -self.direction)):
-                if pygame.Vector2(directions[new_dir]) != self.direction:
-                    self.direction = pygame.Vector2(directions[new_dir])
-            self.next_direction = self.direction
+        if entity.is_centered(self) and (path is None or not len(path) > 0):
+            self.x = random.randint(1, len(self.game_map.level)-2)
+            self.y = random.randint(0, len(self.game_map.level[0])-1)
+
+            return
+
+        self.next_direction = pygame.Vector2(path[0])
+                    
+        if self.direction != self.next_direction:
+            if not entity.check_collision(self, self.next_direction):
+                self.direction = self.next_direction
+
 
         if self.rect.right < 0:
             self.pos.x = WIDTH
