@@ -2,21 +2,25 @@ import pygame
 import os
 from abc import ABC, abstractmethod
 
-BOOST_IMAGES = {}
-
 ASSETS_PATH = os.path.join(os.path.dirname(__file__), "..", "assets", "boosts")
-
-for name, folder in [("CakeBoost", "cake"),
-                     ("StrawberryBoost", "strawberry"),
-                     ("WatermelonBoost", "watermelon")]:
-    file_path = os.path.join(ASSETS_PATH, folder, f"{folder}.png")
-    BOOST_IMAGES[name] = pygame.image.load(file_path).convert_alpha()
-
+BOOST_CONFIGS = {
+    "CakeBoost": "cake",
+    "StrawberryBoost": "strawberry",
+    "WatermelonBoost": "watermelon"
+}
 class Boost(ABC):
+    _images = {}
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.image = BOOST_IMAGES[self.__class__.__name__]
+
+        class_name = self.__class__.__name__
+        if class_name not in Boost._images:
+            folder = BOOST_CONFIGS[class_name]
+            file_path = os.path.join(ASSETS_PATH, folder, f"{folder}.png")
+            Boost._images[class_name] = pygame.image.load(file_path).convert_alpha()
+
+        self.image = Boost._images[class_name]
         self.rect = self.image.get_rect(center=(x,y))
         self.eaten = False
     
@@ -31,14 +35,14 @@ class Boost(ABC):
 
 class CakeBoost(Boost):
     def apply_effect(self, pacman):
-        pacman.speed += 1
+        print("ate a cake")
 
 class StrawberryBoost(Boost):
     def apply_effect(self, pacman):
         #pacman.score += 200
-        return
+        print("ate a strawberry")
 
 class WatermelonBoost(Boost):
     def apply_effect(self, pacman):
         #pacman.invincible = True
-        return 
+        print("ate a watermelon")
