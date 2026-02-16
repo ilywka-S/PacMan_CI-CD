@@ -106,6 +106,7 @@ class ObjectManager:
         for pellet in self.pellets:
             if not pellet.eaten and player.rect.inflate(4, 4).colliderect(pellet.rect):
                 pellet.eaten = True
+                player.score += 10
         if self.current_boost and not self.current_boost.eaten:
             if player.rect.colliderect(self.current_boost.rect):
                 self.current_boost.apply_effect(player)

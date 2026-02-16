@@ -20,6 +20,7 @@ class Pacman(pygame.sprite.Sprite):
         self.next_direction = pygame.Vector2(0, 0)
         self.speed = PACMAN_SPEED
         self.lives = 3
+        self.score = 0
 
         self.pos = pygame.Vector2(self.rect.topleft)
         self.start_pos = self.pos.copy()
