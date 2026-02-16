@@ -1,5 +1,6 @@
 import random
 import time
+import pygame
 from collections import deque
 from src.game_objects.pellet import Pellet
 from src.game_objects.boost import CakeBoost, StrawberryBoost, WatermelonBoost
@@ -23,6 +24,7 @@ class ObjectManager:
 
     def find_reachable_tiles(self, start_x, start_y):
         visited = set()
+        visited.add((start_x, start_y))
         queue = deque([(start_x, start_y)])
 
         while queue:
@@ -58,9 +60,14 @@ class ObjectManager:
                 valid.append((x, y))
         return valid
 
-    def spawn_pellets(self):
+    def spawn_pellets(self, player=None):
         valid_tiles = self.get_valid_tiles()
         self.pellets = [Pellet(x, y) for x, y in valid_tiles]
+
+        if player:
+            for pellet in self.pellets:
+                if player.rect.colliderect(pellet.rect):
+                    pellet.eaten = True
 
     def spawn_boost(self):
         if self.current_boost:
@@ -90,6 +97,12 @@ class ObjectManager:
 
     def draw_objects(self, screen):
         for pellet in self.pellets:
-            pellet.draw(screen)
+            if not pellet.eaten: 
+                pellet.draw(screen)
         if self.current_boost:
             self.current_boost.draw(screen)
+    
+    def update_objects(self, player):
+        for pellet in self.pellets:
+            if not pellet.eaten and player.rect.inflate(4, 4).colliderect(pellet.rect):
+                pellet.eaten = True

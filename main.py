@@ -39,6 +39,7 @@ if __name__ == "__main__":
 
     ghosts_group = pygame.sprite.Group(ghosts)
     objects = ObjectManager(game_map)
+    objects.spawn_pellets(player)
     
     running = True
     while running:
@@ -63,15 +64,16 @@ if __name__ == "__main__":
 
                 for ghost in ghosts_group:
                     ghost.reset_position()
-        
-        objects.update_boost()
+
 
         screen.fill(BLACK)
         game_map.draw_map(screen)
-        objects.draw_objects(screen)
-        objects.spawn_boost()
         screen.blit(player.image, player.rect)
         ghosts_group.draw(screen)
+        
+        objects.update_boost()
+        objects.update_objects(player)
+        objects.draw_objects(screen)
 
         pygame.display.flip()
         clock.tick(FPS)

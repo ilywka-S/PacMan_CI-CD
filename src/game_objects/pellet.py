@@ -20,4 +20,6 @@ class Pellet:
 
     def draw(self, screen):
         if not self.eaten:
-            pygame.draw.circle(screen, WHITE, (self.x, self.y), self.radius)
+            center_x = self.rect.centerx
+            center_y = self.rect.centery
+            pygame.draw.circle(screen, WHITE, (center_x, center_y), self.radius)
