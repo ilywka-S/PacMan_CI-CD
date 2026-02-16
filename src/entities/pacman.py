@@ -51,11 +51,11 @@ class Pacman(pygame.sprite.Sprite):
             elif entity.is_centered(self):
                 if self.direction != self.next_direction:
                     if not entity.check_collision(self, self.next_direction):
-                        current_tile_x = (self.rect.centerx // TILE_SIZE) * TILE_SIZE + TILE_SIZE // 2
-                        current_tile_y = (self.rect.centery // TILE_SIZE) * TILE_SIZE + TILE_SIZE // 2
+                        current_tile_x = (self.rect.centerx // TILE_SIZE) * TILE_SIZE
+                        current_tile_y = (self.rect.centery // TILE_SIZE) * TILE_SIZE
 
-                        self.pos.x = current_tile_x - TILE_SIZE // 2
-                        self.pos.y = current_tile_y - TILE_SIZE // 2
+                        self.pos.x = current_tile_x
+                        self.pos.y = current_tile_y
                         self.rect.topleft = (self.pos.x, self.pos.y)
 
                         self.direction = self.next_direction
@@ -68,11 +68,19 @@ class Pacman(pygame.sprite.Sprite):
             self.pos.x = -self.rect.width
             self.rect.x = -self.rect.width
 
+        #змінила перевірку колізії (тепер по одному пікселю, чекніть шо тут)
         if not entity.check_collision(self, self.direction):
-            self.pos += self.direction * self.speed
-            self.rect.topleft = self.pos.x, self.pos.y
-        else:
-            self.rect.topleft = self.pos.x, self.pos.y
+            for _ in range(int(self.speed)):
+                if not entity.check_collision(self, self.direction):
+                    self.pos += self.direction
+                    self.rect.topleft = self.pos.x, self.pos.y
+                else:
+                    break
+        #     self.pos += self.direction * self.speed
+        #     self.rect.topleft = self.pos.x, self.pos.y
+        # else:
+        #     self.rect.topleft = (self.pos.x, self.pos.y)
+            
 
     def import_assets(self):
         path_move = 'src/assets/pacman/pacman_move.png'
