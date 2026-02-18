@@ -1,4 +1,5 @@
 import pygame
+import random
 from src.utils.constants import WIDTH, HEIGHT, TILE_SIZE, BLACK, FPS
 from src.map.testMap import Map
 from src.entities.pacman import Pacman
@@ -6,7 +7,10 @@ from src.entities.ghost import Pinky, Inky, Clyde, Sue
 from src.map.randomized_map import RandomMap
 from src.game_objects.object_manager import ObjectManager
 
-game_map = Map()
+if random.random() < 0.5:
+    game_map = Map()
+else:
+    game_map = RandomMap()
 
 def play_death_animation(_clock, _player):
     for frame in _player.animations["death"]:
