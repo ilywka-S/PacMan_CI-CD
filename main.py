@@ -85,11 +85,13 @@ if __name__ == "__main__":
         screen.fill(BLACK)
         game_map.draw_map(screen)
         screen.blit(player.image, player.rect)
-        ghosts_group.draw(screen)
 
         objects.update_boost()
         objects.update_objects(player)
         objects.draw_objects(screen)
+
+        ghosts_group.draw(screen)
+        
         draw_score(screen, font, player.score)
 
         pygame.display.flip()
