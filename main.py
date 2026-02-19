@@ -57,27 +57,30 @@ if __name__ == "__main__":
         ghosts_group.update()
 
         collision = pygame.sprite.spritecollide(player, ghosts_group, False)
-        colide = []
+        real_collision = []
 
         for i in range(len(collision)):
             if collision[i].is_dead != True:
-                colide = [collision[i]]
+                real_collision = [collision[i]]
 
-        if len(colide) > 0 and colide is not None:
-            colide[0].is_dead = True
-            colide.pop()
-        
+        if player.shielded:
+            for ghost in ghosts_group:
+                ghost.is_scared = True
+        else:
+            for ghost in ghosts_group:
+                ghost.is_scared = False
 
         for ghost in ghosts_group:
-            if ghost.pos == ghost.start_pos:
+            if ghost.pos.distance_to(ghost.start_pos) <= ghost.speed:
                 ghost.is_dead = False
 
-        if collision:
+        if real_collision:
             if player.shielded:
+                real_collision[0].is_scared = False
+                real_collision[0].is_dead = True
+                real_collision.pop()
                 player.shielded = False
                 del player.active_boosts["shield"]
-                for ghost in ghosts_group:
-                    ghost.reset_position()
             else:
                 player.lives -= 1
                 play_death_animation(clock, player)
