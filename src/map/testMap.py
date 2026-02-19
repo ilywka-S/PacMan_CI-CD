@@ -1,5 +1,5 @@
 import pygame
-from src.utils.constants import TILE_SIZE, BLUE
+from src.utils.constants import TILE_SIZE, BLUE, MAP_OFFSET_Y
 
 class Map():
     def __init__(self):
@@ -51,7 +51,5 @@ class Map():
 
     def draw_map(self, screen):
         for wall in self.walls:
-            pygame.draw.rect(screen, BLUE, wall, 2)
-        
-
-
+            shifted = wall.move(0, MAP_OFFSET_Y)
+            pygame.draw.rect(screen, BLUE, shifted, 2)

@@ -1,5 +1,5 @@
 import pygame
-from src.utils.constants import TILE_SIZE, WHITE
+from src.utils.constants import TILE_SIZE, WHITE, MAP_OFFSET_Y
 
 class Pellet:
     def __init__(self, grid_x, grid_y):
@@ -21,5 +21,5 @@ class Pellet:
     def draw(self, screen):
         if not self.eaten:
             center_x = self.rect.centerx
-            center_y = self.rect.centery
+            center_y = self.rect.centery + MAP_OFFSET_Y
             pygame.draw.circle(screen, WHITE, (center_x, center_y), self.radius)

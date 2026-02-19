@@ -1,11 +1,39 @@
 import pygame
 import random
-from src.utils.constants import TILE_SIZE, GRID_HEIGHT, GRID_WIDTH, WIDTH, HEIGHT, BLUE, BLACK, FPS
+from src.utils.constants import TILE_SIZE, GRID_HEIGHT, GRID_WIDTH, WIDTH, HEIGHT, BLUE, BLACK, FPS, MAP_OFFSET_Y
 
 class RandomMap():
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    def __init__(self):
+        self.level = self.generate_pacman_maze()
+        self.walls = []
+        self.create_walls()
 
-    def generate_pacman_maze():
+        self.height = len(self.level)
+        self.width = len(self.level[0])
+
+        self.ghost_zone_size = 3
+        self.ghost_start_x = self.width // 2 - 1
+        self.ghost_start_y = self.height // 2 - 1
+
+
+    def create_walls(self):
+        self.walls = []
+
+        for y, row in enumerate(self.level):
+            for x, tile in enumerate(row):
+                if tile == 1:
+                    self.walls.append(
+                        pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                    )
+
+
+    def draw_map(self, screen):
+        for wall in self.walls:
+            shifted = wall.move(0, MAP_OFFSET_Y)
+            pygame.draw.rect(screen, BLUE, shifted, 2)
+
+
+    def generate_pacman_maze(self): 
         level = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
         
         for y in range(GRID_HEIGHT):
@@ -53,6 +81,3 @@ class RandomMap():
         level[tunnel_y][GRID_WIDTH-1] = level[tunnel_y][GRID_WIDTH-2] = 0
 
         return level
-
-    level = generate_pacman_maze()
-

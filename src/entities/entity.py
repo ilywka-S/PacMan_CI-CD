@@ -9,9 +9,9 @@ def is_centered(self):
         dist_x = abs(center_x - tile_center_x)
         dist_y = abs(center_y - tile_center_y)
 
-        tolerance = self.speed
+        tolerance = GHOST_SPEED
 
-        return dist_x < tolerance and dist_y < tolerance
+        return dist_x <= tolerance and dist_y <= tolerance
 
 def check_collision(self, direction):
         next_pos = self.rect.copy()

@@ -17,7 +17,6 @@ class Ghost(pygame.sprite.Sprite, ABC):
         self.start_pos = pygame.Vector2(self.rect.topleft)
         self.x = 1
         self.y = 1
-        self.speed = GHOST_SPEED
 
         self.direction = pygame.Vector2(0, -1)
         self.next_direction = pygame.Vector2(0, 0)
@@ -25,14 +24,8 @@ class Ghost(pygame.sprite.Sprite, ABC):
         self.game_map = game_map
         self.pacman = pacman
 
-        self.path = [[0, 0]]
         self.sprite_start = (0, 0)
         self.sprite_width = (16, 16)
-
-        self.sprite_dead = pygame.image.load(f'src/assets/ghosts/killed_ghost/killed_ghost.png')
-        ### behaviours:
-        self.is_scared = False
-        self.is_dead = False
         
     @property
     @abstractmethod
@@ -41,29 +34,21 @@ class Ghost(pygame.sprite.Sprite, ABC):
 
     @abstractmethod
     def move(self):
-        
         pass
 
     def change_sprite(self):
         tick = (pygame.time.get_ticks()//(FPS*4))%2
 
-        if self.is_scared:
+        if self.direction == pygame.Vector2(1, 0):
             self.sprite_start = (0, TILE_SIZE*tick)
-        elif self.is_dead:
+        elif self.direction == pygame.Vector2(-1, 0):
             self.sprite_start = (16, TILE_SIZE*tick)
-        else:
-            if self.direction == pygame.Vector2(1, 0):
-                self.sprite_start = (0, TILE_SIZE*tick)
-            elif self.direction == pygame.Vector2(-1, 0):
-                self.sprite_start = (16, TILE_SIZE*tick)
-            elif self.direction == pygame.Vector2(0, -1):
-                self.sprite_start = (32, TILE_SIZE*tick)
-            elif self.direction == pygame.Vector2(0, 1):
-                self.sprite_start = (48, TILE_SIZE*tick)
+        elif self.direction == pygame.Vector2(0, -1):
+            self.sprite_start = (32, TILE_SIZE*tick)
+        elif self.direction == pygame.Vector2(0, 1):
+            self.sprite_start = (48, TILE_SIZE*tick)
 
-            return self.sprite.subsurface((self.sprite_start, self.sprite_width))
-        
-        return self.sprite_dead.subsurface((self.sprite_start, self.sprite_width))
+        return self.sprite.subsurface((self.sprite_start, self.sprite_width))
 
     
     def bfs_original(self, matrix, start, goal):
@@ -132,17 +117,17 @@ class Ghost(pygame.sprite.Sprite, ABC):
         return None  
 
     def reconstruct_path(self, visited, goal):
-        self.path = []
+        path = []
         curr = goal
         while curr is not None:
-            self.path.append(curr)
+            path.append(curr)
             curr = visited[curr]
         
         dir_list = []
 
-        for i in range(len(self.path)-1):
-            target = self.path[i]
-            source = self.path[i+1]
+        for i in range(len(path)-1):
+            target = path[i]
+            source = path[i+1]
             
             dy = target[0] - source[0]
             dx = target[1] - source[1]
@@ -202,28 +187,13 @@ class Pinky(Ghost):
 
     def move(self):
         if entity.is_centered(self):
-            if self.is_dead:
-                self.speed = GHOST_SPEED * 2
-            elif self.is_scared:
-                self.speed = GHOST_SPEED * 0.5
-            else:
-                self.speed = GHOST_SPEED
-
-            current_tile = (round(self.pos[1] / TILE_SIZE), round(self.pos[0] / TILE_SIZE))
-            
-            if self.is_dead or self.is_scared:
-                target_tile = (round(self.start_pos[1] / TILE_SIZE), round(self.start_pos[0] / TILE_SIZE))
-            else:
-                target_tile = self.predict_future_position(self.directions)
-
-            self.path = self.bfs_original(self.game_map.level, current_tile, target_tile)
-
-            if self.path and len(self.path) > 0:
-                self.next_direction = pygame.Vector2(self.path[0])
-                    
-        if self.direction != self.next_direction:
-            if not entity.check_collision(self, self.next_direction):
-                self.direction = self.next_direction
+            path = self.bfs_original(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (self.predict_future_position(self.directions)))
+            if path is not None and len(path) > 0:
+                self.next_direction = pygame.Vector2(path[0])
+                
+            if self.direction != self.next_direction:
+                if not entity.check_collision(self, self.next_direction):
+                    self.direction = self.next_direction
 
         if self.rect.right < 0:
             self.pos.x = WIDTH
@@ -233,9 +203,10 @@ class Pinky(Ghost):
             self.rect.x = -self.rect.width
 
         if not entity.check_collision(self, self.direction):
-            self.pos += self.direction * self.speed
-        
-        self.rect.topleft = self.pos.x, self.pos.y
+            self.pos += self.direction * GHOST_SPEED
+            self.rect.topleft = self.pos.x, self.pos.y
+        else:
+            self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
         self.move()
@@ -251,28 +222,13 @@ class Inky(Ghost):
 
     def move(self):
         if entity.is_centered(self):
-            if self.is_dead:
-                self.speed = GHOST_SPEED * 2
-            elif self.is_scared:
-                self.speed = GHOST_SPEED * 0.5
-            else:
-                self.speed = GHOST_SPEED
-
-            current_tile = (round(self.pos[1] / TILE_SIZE), round(self.pos[0] / TILE_SIZE))
-            
-            if self.is_dead or self.is_scared:
-                target_tile = (round(self.start_pos[1] / TILE_SIZE), round(self.start_pos[0] / TILE_SIZE))
-            else:
-                target_tile = self.predict_future_position(self.directions[::-1])
-
-            self.path = self.bfs_dodge_pacman(self.game_map.level, current_tile, target_tile)
-
-            if self.path and len(self.path) > 0:
-                self.next_direction = pygame.Vector2(self.path[0])
-                    
-        if self.direction != self.next_direction:
-            if not entity.check_collision(self, self.next_direction):
-                self.direction = self.next_direction
+            path = self.bfs_dodge_pacman(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (self.predict_future_position(self.directions[::-1])))
+            if path is not None and len(path) > 0:
+                self.next_direction = pygame.Vector2(path[0])
+                
+            if self.direction != self.next_direction:
+                if not entity.check_collision(self, self.next_direction):
+                    self.direction = self.next_direction
 
         if self.rect.right < 0:
             self.pos.x = WIDTH
@@ -282,9 +238,10 @@ class Inky(Ghost):
             self.rect.x = -self.rect.width
 
         if not entity.check_collision(self, self.direction):
-            self.pos += self.direction * self.speed
-        
-        self.rect.topleft = self.pos.x, self.pos.y
+            self.pos += self.direction * GHOST_SPEED
+            self.rect.topleft = self.pos.x, self.pos.y
+        else:
+            self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
         self.move()
@@ -301,28 +258,13 @@ class Sue(Ghost):
 
     def move(self):
         if entity.is_centered(self):
-            if self.is_dead:
-                self.speed = GHOST_SPEED * 2
-            elif self.is_scared:
-                self.speed = GHOST_SPEED * 0.5
-            else:
-                self.speed = GHOST_SPEED
-
-            current_tile = (round(self.pos[1] / TILE_SIZE), round(self.pos[0] / TILE_SIZE))
-            
-            if self.is_dead or self.is_scared:
-                target_tile = (round(self.start_pos[1] / TILE_SIZE), round(self.start_pos[0] / TILE_SIZE))
-            else:
-                target_tile = (round(self.pacman.pos[1] / TILE_SIZE), round(self.pacman.pos[0] / TILE_SIZE))
-
-            self.path = self.bfs_original(self.game_map.level, current_tile, target_tile)
-
-            if self.path and len(self.path) > 0:
-                self.next_direction = pygame.Vector2(self.path[0])
-                    
-        if self.direction != self.next_direction:
-            if not entity.check_collision(self, self.next_direction):
-                self.direction = self.next_direction
+            path = self.bfs_original(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (int(self.pacman.pos[1])//TILE_SIZE, int(self.pacman.pos[0])//TILE_SIZE))
+            if path is not None and len(path) > 0:
+                self.next_direction = pygame.Vector2(path[0])
+                
+            if self.direction != self.next_direction:
+                if not entity.check_collision(self, self.next_direction):
+                    self.direction = self.next_direction
 
         if self.rect.right < 0:
             self.pos.x = WIDTH
@@ -332,9 +274,10 @@ class Sue(Ghost):
             self.rect.x = -self.rect.width
 
         if not entity.check_collision(self, self.direction):
-            self.pos += self.direction * self.speed
-        
-        self.rect.topleft = self.pos.x, self.pos.y
+            self.pos += self.direction * GHOST_SPEED
+            self.rect.topleft = self.pos.x, self.pos.y
+        else:
+            self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
         self.move()
@@ -349,35 +292,20 @@ class Clyde(Ghost):
         return self.change_sprite()
     
     def move(self):
-        if entity.is_centered(self):
-            if self.is_dead:
-                self.speed = GHOST_SPEED * 2
-            elif self.is_scared:
-                self.speed = GHOST_SPEED * 0.5
-            else:
-                self.speed = GHOST_SPEED
+        path = self.bfs_original(self.game_map.level, (int(self.pos[1])//TILE_SIZE, int(self.pos[0])//TILE_SIZE), (self.x, self.y))
 
-            current_tile = (round(self.pos[1] / TILE_SIZE), round(self.pos[0] / TILE_SIZE))
-            
-            if self.is_dead or self.is_scared:
-                target_tile = (round(self.start_pos[1] / TILE_SIZE), round(self.start_pos[0] / TILE_SIZE))
-            else:
-                target_tile = (self.x, self.y)
-            
-            self.path = self.bfs_original(self.game_map.level, current_tile, target_tile)
+        if entity.is_centered(self) and (path is None or not len(path) > 0):
+            self.x = random.randint(1, len(self.game_map.level)-2)
+            self.y = random.randint(0, len(self.game_map.level[0])-1)
 
-            if self.path is None or not len(self.path) > 0:
-                self.x = random.randint(1, len(self.game_map.level)-2)
-                self.y = random.randint(0, len(self.game_map.level[0])-1)
+            return
 
-                return
-
-            if self.path and len(self.path) > 0:
-                self.next_direction = pygame.Vector2(self.path[0])
+        self.next_direction = pygame.Vector2(path[0])
                     
         if self.direction != self.next_direction:
             if not entity.check_collision(self, self.next_direction):
                 self.direction = self.next_direction
+
 
         if self.rect.right < 0:
             self.pos.x = WIDTH
@@ -387,9 +315,10 @@ class Clyde(Ghost):
             self.rect.x = -self.rect.width
 
         if not entity.check_collision(self, self.direction):
-            self.pos += self.direction * self.speed
-        
-        self.rect.topleft = self.pos.x, self.pos.y
+            self.pos += self.direction * GHOST_SPEED
+            self.rect.topleft = self.pos.x, self.pos.y
+        else:
+            self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
         self.move()

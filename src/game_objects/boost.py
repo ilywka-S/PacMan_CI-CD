@@ -1,6 +1,6 @@
 import pygame, os, time
 from abc import ABC, abstractmethod
-from src.utils.constants import PACMAN_SPEED, BOOST_DURATION
+from src.utils.constants import PACMAN_SPEED, BOOST_DURATION, MAP_OFFSET_Y
 
 ASSETS_PATH = os.path.join(os.path.dirname(__file__), "..", "assets", "boosts")
 BOOST_CONFIGS = {
@@ -26,7 +26,8 @@ class Boost(ABC):
     
     def draw(self, screen):
         if not self.eaten:
-            screen.blit(self.image, self.rect)
+            shifted_rect = self.rect.move(0, MAP_OFFSET_Y)
+            screen.blit(self.image, shifted_rect)
     
     @abstractmethod
     def apply_effect(self, pacman):
