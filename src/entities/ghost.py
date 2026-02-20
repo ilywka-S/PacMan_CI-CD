@@ -6,6 +6,7 @@ from src.utils.constants import TILE_SIZE, GHOST_SPEED, WIDTH, FPS
 import src.entities.entity as entity
 
 import random
+import time
 
 class Ghost(pygame.sprite.Sprite, ABC):
     directions = [(-1, 0), (0, -1), (0, 1), (1, 0)]
@@ -33,6 +34,8 @@ class Ghost(pygame.sprite.Sprite, ABC):
         ### behaviours:
         self.is_scared = False
         self.is_dead = False
+
+        self.spawn_time = pygame.time.get_ticks()
         
     @property
     @abstractmethod
@@ -41,8 +44,45 @@ class Ghost(pygame.sprite.Sprite, ABC):
 
     @abstractmethod
     def move(self):
-        
         pass
+
+    def find_empty_center_tiles(self):
+        rows = self.game_map.height
+        cols = self.game_map.width
+
+        start_y, start_x = rows // 2, cols // 2
+
+        visited = set()
+        queue = deque([(start_y, start_x)])
+        inner_zeros = []
+        
+        visited.add((start_y, start_x))
+        
+        while queue:
+            y, x = queue.popleft()
+            inner_zeros.append((y, x))
+            
+            for dy, dx in self.directions:
+                next_y, next_x = y + dy, x + dx
+                
+                if 0 <= next_y < rows and 0 <= next_x < cols:
+                    if self.game_map.level[next_y][next_x] == 0 and (next_y, next_x) not in visited:
+                        visited.add((next_y, next_x))
+                        queue.append((next_y, next_x))
+                        
+        return sorted(inner_zeros)
+
+    def open_tile_for_ghost(self):
+        open_tile = self.find_empty_center_tiles()[1]
+
+        tick = (pygame.time.get_ticks() - self.spawn_time)//FPS
+
+        if tick >= FPS*self.time_out:
+            for tile in self.find_empty_center_tiles():
+                if self.pos == [tile[1]*TILE_SIZE, tile[0]*TILE_SIZE]:
+                    self.pos = [open_tile[1]*TILE_SIZE, (open_tile[0]-2)*TILE_SIZE]
+                    print(self.pos)
+        return
 
     def change_sprite(self):
         tick = (pygame.time.get_ticks()//(FPS*4))%2
@@ -98,7 +138,6 @@ class Ghost(pygame.sprite.Sprite, ABC):
         
         return None  
 
-    
     def bfs_dodge_pacman(self, matrix, start, goal):
         rows, cols = len(matrix), len(matrix[0])
         queue = deque([start])
@@ -193,7 +232,9 @@ class Ghost(pygame.sprite.Sprite, ABC):
 #Pinky, Inky, Sue, Clyde
 class Pinky(Ghost):
     sprite = pygame.image.load(f'src/assets/ghosts/pink_ghost/pink_ghost.png')
+    
     def __init__(self, game_map, pacman):
+        self.time_out = 1
         super().__init__(game_map, pacman)
     
     @property
@@ -238,11 +279,13 @@ class Pinky(Ghost):
         self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
+        self.open_tile_for_ghost()
         self.move()
 
 class Inky(Ghost):
     sprite = pygame.image.load(f'src/assets/ghosts/cyan_ghost/cyan_ghost.png')
     def __init__(self, game_map, pacman):
+        self.time_out = 2
         super().__init__(game_map, pacman)
     
     @property
@@ -287,12 +330,14 @@ class Inky(Ghost):
         self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
+        self.open_tile_for_ghost()
         self.move()
 
 class Sue(Ghost):
     sprite = pygame.image.load(f'src/assets/ghosts/purple_ghost/purple_ghost.png')
     
     def __init__(self, game_map, pacman):
+        self.time_out = 3
         super().__init__(game_map, pacman)
     
     @property
@@ -337,11 +382,13 @@ class Sue(Ghost):
         self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
+        self.open_tile_for_ghost()
         self.move()
 
 class Clyde(Ghost):
     sprite = pygame.image.load(f'src/assets/ghosts/brown_ghost/brown_ghost.png')
     def __init__(self, game_map, pacman):
+        self.time_out = 4
         super().__init__(game_map, pacman)
 
     @property
@@ -392,4 +439,5 @@ class Clyde(Ghost):
         self.rect.topleft = self.pos.x, self.pos.y
 
     def update(self):
+        self.open_tile_for_ghost()
         self.move()

@@ -14,7 +14,7 @@ objects = None
 
 def init_game():
     global game_map, player, ghosts_group, objects
-    if random.random() < 0.5:
+    if random.random() < 1.5:
         game_map = Map()
     else:
         game_map = RandomMap()
@@ -123,7 +123,7 @@ if __name__ == "__main__":
                     ghost.is_scared = False
 
             for ghost in ghosts_group:
-                if ghost.pos.distance_to(ghost.start_pos) <= ghost.speed:
+                if ghost.is_dead and ghost.pos.distance_to(ghost.start_pos) <= ghost.speed:
                     ghost.is_dead = False
                     
             if real_collision:
@@ -134,6 +134,7 @@ if __name__ == "__main__":
                     player.shielded = False
                     del player.active_boosts["shield"]
                 else:
+                    '''
                     player.lives -= 1
                     play_death_animation(clock, player)
                     pygame.time.delay(300)
@@ -143,7 +144,7 @@ if __name__ == "__main__":
                     else:
                         player.reset_position()
                         for ghost in ghosts_group:
-                            ghost.reset_position()
+                            ghost.reset_position()'''
 
             screen.fill(BLACK)
             game_map.draw_map(screen)
