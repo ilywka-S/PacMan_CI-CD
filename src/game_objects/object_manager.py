@@ -85,7 +85,7 @@ class ObjectManager:
         pixel_x = x * TILE_SIZE + TILE_SIZE // 2
         pixel_y = y * TILE_SIZE + TILE_SIZE // 2
 
-        boost_class = random.choice([WatermelonBoost])
+        boost_class = random.choice([CakeBoost, StrawberryBoost, WatermelonBoost])
         self.current_boost = boost_class(pixel_x, pixel_y)
     
     def update_boost(self):

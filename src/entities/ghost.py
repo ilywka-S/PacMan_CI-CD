@@ -57,7 +57,7 @@ class Ghost(pygame.sprite.Sprite, ABC):
             
             if seconds >= self.time_out and self.get_current_tile() in self.empty_tiles:
                 self.is_dead = False
-                target_tile = self.open_tile_for_ghost(seconds)
+                target_tile = self.open_tile_for_ghost()
                 
             elif self.get_current_tile() in self.empty_tiles:
                 available_tiles = self.empty_tiles.copy()
@@ -105,10 +105,9 @@ class Ghost(pygame.sprite.Sprite, ABC):
                         
         return sorted(inner_zeros)
 
-    def open_tile_for_ghost(self, seconds):
+    def open_tile_for_ghost(self):
         open_tile = self.empty_tiles[1]
 
-        print(seconds)
         return (open_tile[0]-2, open_tile[1])
 
     def change_sprite(self):
