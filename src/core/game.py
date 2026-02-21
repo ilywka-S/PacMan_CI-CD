@@ -143,6 +143,7 @@ class Game():
                         else:
                             entity.reset_position(self.player)
                             for ghost in self.ghosts_group:
+                                ghost.spawn_time = pygame.time.get_ticks()
                                 entity.reset_position(ghost)
 
                 self.screen.fill(BLACK)

@@ -53,8 +53,6 @@ class Ghost(pygame.sprite.Sprite, ABC):
     def pathfind(self):
         if entity.is_centered(self):
             seconds = (pygame.time.get_ticks() - self.spawn_time) / 1000
-
-            self.change_speed()
             
             if seconds >= self.time_out and self.get_current_tile() in self.empty_tiles:
                 self.is_dead = False
@@ -259,6 +257,7 @@ class Pinky(Ghost):
         return self.predict_future_position(self.directions)
 
     def update(self):
+        self.change_speed()
         self.pathfind()
 
 class Inky(Ghost):
@@ -275,6 +274,7 @@ class Inky(Ghost):
         return self.predict_future_position(self.directions[::-1])
 
     def update(self):
+        self.change_speed()
         self.pathfind()
 
 class Sue(Ghost):
@@ -292,6 +292,7 @@ class Sue(Ghost):
         return (round(self.pacman.pos[1] / TILE_SIZE), round(self.pacman.pos[0] / TILE_SIZE))
 
     def update(self):
+        self.change_speed()
         self.pathfind()
 
 class Clyde(Ghost):
@@ -313,4 +314,5 @@ class Clyde(Ghost):
             return (self.x, self.y)
 
     def update(self):
+        self.change_speed()
         self.pathfind()
