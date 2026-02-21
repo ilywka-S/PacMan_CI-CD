@@ -1,0 +1,162 @@
+import pygame
+import random
+
+import src.entities.entity as entity
+from src.utils.constants import WIDTH, HEIGHT, TILE_SIZE, BLACK, FPS, MAP_OFFSET_Y
+from src.map.testMap import Map
+from src.entities.pacman import Pacman
+from src.entities.ghost import Pinky, Inky, Clyde, Sue
+from src.map.randomized_map import RandomMap
+from src.game_objects.object_manager import ObjectManager
+
+class Game():
+    def __init__(self):
+        pygame.init() 
+
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.SysFont(None, 28)
+        
+        self.game_map = None
+        self.player = None
+        self.ghosts_group = None
+        self.objects = None
+
+        self.game_state = "menu"
+
+        self.load_assets()
+        self.init_game()
+    
+    def init_game(self):
+        if random.random() < 0.5:
+            self.game_map = Map()
+        else:
+            self.game_map = RandomMap()
+
+        self.player = Pacman(TILE_SIZE, TILE_SIZE, self.game_map)
+
+        ghosts = [ 
+            Pinky(self.game_map, self.player),
+            Inky(self.game_map, self.player),
+            Clyde(self.game_map, self.player),
+            Sue(self.game_map, self.player)
+        ]
+        self.ghosts_group = pygame.sprite.Group(ghosts)
+
+        self.objects = ObjectManager(self.game_map)
+        self.objects.spawn_pellets(self.player)
+
+    def load_assets(self):
+        self.startpage_img = pygame.image.load('src/assets/interface/startpage/startpage.png').convert_alpha()
+        self.startpage_img = pygame.transform.scale(self.startpage_img, (WIDTH, HEIGHT))
+
+        self.play_btn_img = pygame.image.load('src/assets/interface/play_button/play_button.png').convert_alpha()
+        self.menu_btn_img = pygame.image.load('src/assets/interface/menu_button/menu_button.png').convert_alpha()
+
+        self.play_btn_rect = self.play_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        self.menu_btn_rect = self.menu_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + self.play_btn_img.get_height()))
+
+        self.easy_mode_btn_img = pygame.image.load('src/assets/interface/lvl_difficulty/easy_lvl.png').convert_alpha()
+        self.medium_mode_btn_img = pygame.image.load('src/assets/interface/lvl_difficulty/medium_lvl.png').convert_alpha()
+        self.hard_mode_btn_img = pygame.image.load('src/assets/interface/lvl_difficulty/hard_lvl.png').convert_alpha()
+
+        self.easy_mode_btn_rect = self.easy_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 60))
+        self.medium_mode_btn_rect = self.medium_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        self.hard_mode_btn_rect = self.hard_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
+
+    def play_death_animation(self):
+        for frame in self.player.animations["death"]:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+            self.screen.fill(BLACK)
+            self.game_map.draw_map(self.screen)
+            for ghost in self.ghosts_group:
+                self.screen.blit(ghost.image, ghost.rect.move(0, MAP_OFFSET_Y))
+            shifted_rect = self.player.rect.move(0, MAP_OFFSET_Y)
+            self.screen.blit(frame, shifted_rect)
+            pygame.display.flip()
+
+            self.clock.tick(10)
+
+    def draw_score(self):
+        score_text = self.font.render(str(self.player.score), True, (255, 0, 0))
+        score_rect = score_text.get_rect(center=(WIDTH // 2, MAP_OFFSET_Y // 2))
+        self.screen.blit(score_text, score_rect)
+
+    def run(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.game_state == "menu":
+                    if self.play_btn_rect.collidepoint(event.pos):
+                        self.init_game()
+                        self.game_state = "game"
+                    if self.menu_btn_rect.collidepoint(event.pos):
+                        self.game_state = "settings"
+
+            if self.game_state == "menu":
+                self.screen.blit(self.startpage_img, (0, 0))
+                self.screen.blit(self.play_btn_img, self.play_btn_rect)
+                self.screen.blit(self.menu_btn_img, self.menu_btn_rect)
+
+            elif self.game_state == "settings":
+                self.screen.fill(BLACK)
+                self.screen.blit(self.easy_mode_btn_img, self.easy_mode_btn_rect)
+                self.screen.blit(self.medium_mode_btn_img, self.medium_mode_btn_rect)
+                self.screen.blit(self.hard_mode_btn_img, self.hard_mode_btn_rect)
+
+            elif self.game_state == "game":
+                self.player.update()
+                self.ghosts_group.update()
+
+                collision = pygame.sprite.spritecollide(self.player, self.ghosts_group, False)
+                real_collision = []
+
+                for i in range(len(collision)):
+                    if collision[i].is_dead != True:
+                        real_collision = [collision[i]]
+
+                for ghost in self.ghosts_group:
+                    ghost.is_scared = self.player.shielded
+                        
+                if real_collision:
+                    if self.player.shielded:
+                        real_collision[0].is_scared = False
+                        real_collision[0].is_dead = True
+                        real_collision.pop()
+                        self.player.shielded = False
+                        del self.player.active_boosts["shield"]
+                    else:
+                        self.player.lives -= 1
+                        self.play_death_animation()
+                        pygame.time.delay(300)
+
+                        if self.player.lives <= 0:
+                            self.game_state = "menu"
+                        else:
+                            entity.reset_position(self.player)
+                            for ghost in self.ghosts_group:
+                                entity.reset_position(ghost)
+
+                self.screen.fill(BLACK)
+                self.game_map.draw_map(self.screen)
+                self.screen.blit(self.player.image, self.player.rect.move(0, MAP_OFFSET_Y))
+                for ghost in self.ghosts_group:
+                    self.screen.blit(ghost.image, ghost.rect.move(0, MAP_OFFSET_Y))
+
+                self.objects.update_boost()
+                self.objects.update_objects(self.player)
+                self.objects.draw_objects(self.screen)
+                self.draw_score()
+
+            pygame.display.flip()
+            self.clock.tick(FPS)
+
+        pygame.quit()

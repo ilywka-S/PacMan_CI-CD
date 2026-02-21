@@ -13,8 +13,6 @@ class Ghost(pygame.sprite.Sprite, ABC):
         super().__init__()
 
         self.rect = pygame.Rect(9*TILE_SIZE, 12*TILE_SIZE, TILE_SIZE, TILE_SIZE)
-        self.x = 1
-        self.y = 1
         self.speed = GHOST_SPEED
 
         self.direction = pygame.Vector2(0, -1)
@@ -26,6 +24,9 @@ class Ghost(pygame.sprite.Sprite, ABC):
         self.random_empty_tile = random.choice(self.empty_tiles)
         self.start_pos = pygame.Vector2(self.random_empty_tile[1]*TILE_SIZE, self.random_empty_tile[0]*TILE_SIZE)
         self.pos = self.start_pos.copy()
+
+        self.x = self.start_pos.copy()[1]
+        self.y = self.start_pos.copy()[0]
 
         self.pacman = pacman
 
