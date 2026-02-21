@@ -132,14 +132,6 @@ class Pacman(pygame.sprite.Sprite):
 
             self.current_animation = [self.image]
 
-    def reset_position(self):
-        self.rect.topleft = self.start_pos.copy()
-
-        self.direction = pygame.Vector2(0, 0)
-        self.next_direction = pygame.Vector2(0, 0)
-
-        self.pos = self.start_pos.copy()
-
     def animate(self):
         if self.direction == pygame.Vector2(-1, 0):
             self.current_animation = self.animations["left"]
