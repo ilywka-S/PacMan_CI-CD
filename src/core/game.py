@@ -147,13 +147,12 @@ class Game():
 
                 self.screen.fill(BLACK)
                 self.game_map.draw_map(self.screen)
-                self.screen.blit(self.player.image, self.player.rect.move(0, MAP_OFFSET_Y))
-                for ghost in self.ghosts_group:
-                    self.screen.blit(ghost.image, ghost.rect.move(0, MAP_OFFSET_Y))
-
                 self.objects.update_boost()
                 self.objects.update_objects(self.player)
                 self.objects.draw_objects(self.screen)
+                self.screen.blit(self.player.image, self.player.rect.move(0, MAP_OFFSET_Y))
+                for ghost in self.ghosts_group:
+                    self.screen.blit(ghost.image, ghost.rect.move(0, MAP_OFFSET_Y))
                 self.draw_score()
 
             pygame.display.flip()
