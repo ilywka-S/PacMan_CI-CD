@@ -1,11 +1,13 @@
 import pygame
 import random
+import src.entities.entity as entity
 from src.utils.constants import WIDTH, HEIGHT, TILE_SIZE, BLACK, FPS, MAP_OFFSET_Y
 from src.map.testMap import Map
 from src.entities.pacman import Pacman
 from src.entities.ghost import Pinky, Inky, Clyde, Sue
 from src.map.randomized_map import RandomMap
 from src.game_objects.object_manager import ObjectManager
+
 
 game_map = None
 player = None
@@ -121,10 +123,6 @@ if __name__ == "__main__":
             else:
                 for ghost in ghosts_group:
                     ghost.is_scared = False
-
-            for ghost in ghosts_group:
-                if ghost.is_dead and ghost.pos.distance_to(ghost.start_pos) <= ghost.speed:
-                    ghost.is_dead = False
                     
             if real_collision:
                 if player.shielded:
@@ -134,6 +132,7 @@ if __name__ == "__main__":
                     player.shielded = False
                     del player.active_boosts["shield"]
                 else:
+                    '''
                     player.lives -= 1
                     play_death_animation(clock, player)
                     pygame.time.delay(300)
@@ -141,9 +140,9 @@ if __name__ == "__main__":
                     if player.lives <= 0:
                         game_state = "menu"
                     else:
-                        player.reset_position()
+                        entity.reset_position(player)
                         for ghost in ghosts_group:
-                            ghost.reset_position()
+                            entity.reset_position(ghost)'''
 
             screen.fill(BLACK)
             game_map.draw_map(screen)

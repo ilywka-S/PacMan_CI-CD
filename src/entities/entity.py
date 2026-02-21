@@ -1,3 +1,4 @@
+import pygame
 from src.utils.constants import TILE_SIZE, GHOST_SPEED
 
 def is_centered(self):
@@ -22,3 +23,10 @@ def check_collision(self, direction):
         
         return False
 
+def reset_position(self):
+        self.rect.topleft = self.start_pos.copy()
+
+        self.direction = pygame.Vector2(0, 0)
+        self.next_direction = pygame.Vector2(0, 0)
+
+        self.pos = self.start_pos.copy()
