@@ -218,7 +218,7 @@ class Ghost(pygame.sprite.Sprite, ABC):
         elif self.is_scared:
             self.speed = GHOST_SPEED * 0.5
         else:
-            self.speed = GHOST_SPEED
+            self.speed = GHOST_SPEED*1.8
 
     def get_current_tile(self):
         return (round(self.pos[1] / TILE_SIZE), round(self.pos[0] / TILE_SIZE))
