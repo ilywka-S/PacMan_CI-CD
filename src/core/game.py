@@ -70,6 +70,9 @@ class Game():
         self.medium_mode_btn_rect = self.medium_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         self.hard_mode_btn_rect = self.hard_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
 
+        self.pause_btn_img = pygame.image.load('src/assets/interface/pause_button/pause_button.png').convert_alpha()
+        self.pause_btn_rect = self.pause_btn_img.get_rect(topright=(WIDTH - 5, 5))
+
     def play_death_animation(self):
         for frame in self.player.animations["death"]:
             for event in pygame.event.get():
@@ -99,21 +102,32 @@ class Game():
                 if event.type == pygame.QUIT:
                     running = False
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE and self.game_state == "game" and not self.escape_pressed:
-                    self.paused = not self.paused
-                    self.escape_pressed = True
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_ESCAPE:
-                    self.escape_pressed = False 
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE and self.game_state == "game" and not self.escape_pressed:
+                        self.paused = not self.paused
+                        self.escape_pressed = True
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_ESCAPE:
+                        self.escape_pressed = False 
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.game_state == "menu":
-                    if self.play_btn_rect.collidepoint(event.pos):
-                        self.init_game()
-                        self.game_state = "game"
-                    if self.menu_btn_rect.collidepoint(event.pos):
-                        self.game_state = "settings"
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.game_state == "menu":
+                        if self.play_btn_rect.collidepoint(event.pos):
+                            self.init_game()
+                            self.game_state = "game"
+                        if self.menu_btn_rect.collidepoint(event.pos):
+                            self.game_state = "settings"
+
+                    if self.game_state == "game":
+                        if self.pause_btn_rect.collidepoint(event.pos):
+                            self.paused = not self.paused
+                        if self.paused:
+                            result = self.pause_menu.handle_event(event)
+                            if result == 'continue':
+                                self.paused = False
+                            elif result == 'exit':
+                                self.game_state = "menu"
+                                self.paused = False
 
             if self.game_state == "menu":
                 self.screen.blit(self.startpage_img, (0, 0))
@@ -130,7 +144,6 @@ class Game():
                 if not self.paused:
                     self.player.update()
                     self.ghosts_group.update()
-
                     self.objects.update_boost()
                     self.objects.update_objects(self.player)
 
@@ -173,7 +186,9 @@ class Game():
                 self.draw_score()
 
                 if self.paused:
-                    self.pause_menu.draw(self.screen)
+                    self.pause_menu.draw(self.screen)  
+                else:
+                    self.screen.blit(self.pause_btn_img, self.pause_btn_rect)
 
             pygame.display.flip()
             self.clock.tick(FPS)
