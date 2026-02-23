@@ -1,6 +1,7 @@
 import pygame
 import random
 
+from src.entities import ghost
 import src.entities.entity as entity
 from src.utils.constants import WIDTH, HEIGHT, TILE_SIZE, BLACK, FPS, MAP_OFFSET_Y
 from src.map.testMap import Map
@@ -16,7 +17,7 @@ class Game():
 
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont(None, 28)
+        self.font = pygame.font.Font('src/assets/font/arcadeclassic/ARCADECLASSIC.TTF', 28)
         
         self.game_map = None
         self.player = None
@@ -25,6 +26,7 @@ class Game():
         self.pause_menu = None
         self.paused = False
         self.escape_pressed = False
+        self.ghost_speed = 1.0
 
         self.game_state = "menu"
 
@@ -46,6 +48,9 @@ class Game():
             Sue(self.game_map, self.player)
         ]
         self.ghosts_group = pygame.sprite.Group(ghosts)
+        for ghost in self.ghosts_group:
+            ghost.base_speed = self.ghost_speed
+            ghost.speed = self.ghost_speed
 
         self.objects = ObjectManager(self.game_map)
         self.objects.spawn_pellets(self.player)
@@ -66,12 +71,17 @@ class Game():
         self.medium_mode_btn_img = pygame.image.load('src/assets/interface/lvl_difficulty/medium_lvl.png').convert_alpha()
         self.hard_mode_btn_img = pygame.image.load('src/assets/interface/lvl_difficulty/hard_lvl.png').convert_alpha()
 
-        self.easy_mode_btn_rect = self.easy_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 60))
-        self.medium_mode_btn_rect = self.medium_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-        self.hard_mode_btn_rect = self.hard_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
+        self.easy_mode_btn_rect = self.easy_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 65))
+        self.medium_mode_btn_rect = self.medium_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 5))
+        self.hard_mode_btn_rect = self.hard_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 55))
 
         self.pause_btn_img = pygame.image.load('src/assets/interface/pause_button/pause_button.png').convert_alpha()
-        self.pause_btn_rect = self.pause_btn_img.get_rect(topright=(WIDTH - 5, 5))
+        self.pause_btn_rect = self.pause_btn_img.get_rect(topright=(WIDTH - 15, 7))
+
+        self.arrow_btn_img = pygame.image.load('src/assets/interface/arrow/arrow.png').convert_alpha()
+        self.arrow_btn_rect = self.arrow_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 130))
+
+        
 
     def play_death_animation(self):
         for frame in self.player.animations["death"]:
@@ -83,6 +93,8 @@ class Game():
             self.screen.fill(BLACK)
             self.game_map.draw_map(self.screen)
             for ghost in self.ghosts_group:
+                ghost.base_speed = self.ghost_speed
+                ghost.speed = self.ghost_speed
                 self.screen.blit(ghost.image, ghost.rect.move(0, MAP_OFFSET_Y))
             shifted_rect = self.player.rect.move(0, MAP_OFFSET_Y)
             self.screen.blit(frame, shifted_rect)
@@ -91,7 +103,7 @@ class Game():
             self.clock.tick(10)
 
     def draw_score(self):
-        score_text = self.font.render(str(self.player.score), True, (255, 0, 0))
+        score_text = self.font.render(str(self.player.score), True, (255, 255, 255))
         score_rect = score_text.get_rect(center=(WIDTH // 2, MAP_OFFSET_Y // 2))
         self.screen.blit(score_text, score_rect)
 
@@ -117,8 +129,23 @@ class Game():
                             self.game_state = "game"
                         if self.menu_btn_rect.collidepoint(event.pos):
                             self.game_state = "settings"
+                    elif self.game_state == "settings":
+                        if self.arrow_btn_rect.collidepoint(event.pos):
+                            self.game_state = "menu"
+                        if self.easy_mode_btn_rect.collidepoint(event.pos):
+                            self.ghost_speed = 0.8
+                            self.init_game()
+                            self.game_state = "game"
+                        if self.medium_mode_btn_rect.collidepoint(event.pos):
+                            self.ghost_speed = 1.4
+                            self.init_game()
+                            self.game_state = "game"
+                        if self.hard_mode_btn_rect.collidepoint(event.pos):
+                            self.ghost_speed = 2.0
+                            self.init_game()
+                            self.game_state = "game"
 
-                    if self.game_state == "game":
+                    elif self.game_state == "game":
                         if self.pause_btn_rect.collidepoint(event.pos):
                             self.paused = not self.paused
                         if self.paused:
@@ -139,6 +166,7 @@ class Game():
                 self.screen.blit(self.easy_mode_btn_img, self.easy_mode_btn_rect)
                 self.screen.blit(self.medium_mode_btn_img, self.medium_mode_btn_rect)
                 self.screen.blit(self.hard_mode_btn_img, self.hard_mode_btn_rect)
+                self.screen.blit(self.arrow_btn_img, self.arrow_btn_rect)
 
             elif self.game_state == "game":
                 if not self.paused:

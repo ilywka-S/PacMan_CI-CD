@@ -13,7 +13,8 @@ class Ghost(pygame.sprite.Sprite, ABC):
         super().__init__()
 
         self.rect = pygame.Rect(9*TILE_SIZE, 12*TILE_SIZE, TILE_SIZE, TILE_SIZE)
-        self.speed = GHOST_SPEED
+        self.base_speed = GHOST_SPEED
+        self.speed = self.base_speed
 
         self.direction = pygame.Vector2(0, -1)
         self.next_direction = pygame.Vector2(0, 0)
@@ -212,11 +213,11 @@ class Ghost(pygame.sprite.Sprite, ABC):
 
     def change_speed(self):
         if self.is_dead:
-            self.speed = GHOST_SPEED * 4
+            self.speed = self.base_speed * 4
         elif self.is_scared:
-            self.speed = GHOST_SPEED * 0.5
+            self.speed = self.base_speed * 0.5
         else:
-            self.speed = GHOST_SPEED
+            self.speed = self.base_speed
 
     def get_current_tile(self):
         return (round(self.pos[1] / TILE_SIZE), round(self.pos[0] / TILE_SIZE))
