@@ -14,8 +14,8 @@ class Pause:
         center_x =  WIDTH // 2
         center_y = HEIGHT // 2
 
-        self.return_btn_rect = self.return_btn_img.get_rect(center=(center_x, center_y - 50))
-        self.exit_btn_rect = self.exit_btn_img.get_rect(center=(center_x, center_y + 50))
+        self.return_btn_rect = self.return_btn_img.get_rect(center=(center_x, center_y - 20))
+        self.exit_btn_rect = self.exit_btn_img.get_rect(center=(center_x, center_y + 40))
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
