@@ -10,6 +10,7 @@ from src.entities.ghost import Pinky, Inky, Clyde, Sue
 from src.map.randomized_map import RandomMap
 from src.game_objects.object_manager import ObjectManager
 from src.core.pause import Pause
+from src.game_objects.volume_slider import VolumeSlider
 
 class Game():
     def __init__(self):
@@ -29,6 +30,7 @@ class Game():
         self.ghost_speed = 1.0
 
         self.game_state = "menu"
+        
 
         self.load_assets()
         self.init_game()
@@ -55,7 +57,7 @@ class Game():
         self.objects = ObjectManager(self.game_map)
         self.objects.spawn_pellets(self.player)
 
-        self.pause_menu = Pause()
+        self.pause_menu = Pause(self.volume_slider) 
 
     def load_assets(self):
         self.startpage_img = pygame.image.load('src/assets/interface/startpage/startpage.png').convert_alpha()
@@ -71,21 +73,24 @@ class Game():
         self.medium_mode_btn_img = pygame.image.load('src/assets/interface/lvl_difficulty/medium_lvl.png').convert_alpha()
         self.hard_mode_btn_img = pygame.image.load('src/assets/interface/lvl_difficulty/hard_lvl.png').convert_alpha()
 
-        self.easy_mode_btn_rect = self.easy_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 65))
-        self.medium_mode_btn_rect = self.medium_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 5))
-        self.hard_mode_btn_rect = self.hard_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 55))
+        self.easy_mode_btn_rect = self.easy_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 80))
+        self.medium_mode_btn_rect = self.medium_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 20))
+        self.hard_mode_btn_rect = self.hard_mode_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 40))
 
         self.pause_btn_img = pygame.image.load('src/assets/interface/pause_button/pause_button.png').convert_alpha()
         self.pause_btn_rect = self.pause_btn_img.get_rect(topright=(WIDTH - 15, 7))
 
         self.arrow_btn_img = pygame.image.load('src/assets/interface/arrow/arrow.png').convert_alpha()
-        self.arrow_btn_rect = self.arrow_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 130))
+        self.arrow_btn_rect = self.arrow_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 150))
+
+        self.volume_slider = VolumeSlider(center_x=WIDTH // 2, center_y=HEIGHT // 2 + 90)
 
         
 
     def play_death_animation(self):
         for frame in self.player.animations["death"]:
             for event in pygame.event.get():
+                self.volume_slider.handle_event(event)
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
@@ -114,6 +119,8 @@ class Game():
                 if event.type == pygame.QUIT:
                     running = False
 
+                self.volume_slider.handle_event(event)
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE and self.game_state == "game" and not self.escape_pressed:
                         self.paused = not self.paused
@@ -134,16 +141,13 @@ class Game():
                             self.game_state = "menu"
                         if self.easy_mode_btn_rect.collidepoint(event.pos):
                             self.ghost_speed = 0.8
-                            self.init_game()
-                            self.game_state = "game"
+                            self.game_state = "menu"
                         if self.medium_mode_btn_rect.collidepoint(event.pos):
                             self.ghost_speed = 1.4
-                            self.init_game()
-                            self.game_state = "game"
+                            self.game_state = "menu"
                         if self.hard_mode_btn_rect.collidepoint(event.pos):
                             self.ghost_speed = 2.0
-                            self.init_game()
-                            self.game_state = "game"
+                            self.game_state = "menu"
 
                     elif self.game_state == "game":
                         if self.pause_btn_rect.collidepoint(event.pos):
@@ -167,6 +171,7 @@ class Game():
                 self.screen.blit(self.medium_mode_btn_img, self.medium_mode_btn_rect)
                 self.screen.blit(self.hard_mode_btn_img, self.hard_mode_btn_rect)
                 self.screen.blit(self.arrow_btn_img, self.arrow_btn_rect)
+                self.volume_slider.draw(self.screen)
 
             elif self.game_state == "game":
                 if not self.paused:
