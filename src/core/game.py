@@ -84,7 +84,6 @@ class Game():
         self.arrow_btn_rect = self.arrow_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 150))
 
         self.volume_slider = VolumeSlider(center_x=WIDTH // 2, center_y=HEIGHT // 2 + 90)
-
         
 
     def play_death_animation(self):
@@ -208,6 +207,9 @@ class Game():
                                 entity.reset_position(self.player)
                                 for ghost in self.ghosts_group:
                                     ghost.spawn_time = pygame.time.get_ticks()
+                                    ghost.is_dead = False
+                                    ghost.is_scared = False 
+                                    ghost.path = []
                                     entity.reset_position(ghost)
 
                 self.screen.fill(BLACK)
