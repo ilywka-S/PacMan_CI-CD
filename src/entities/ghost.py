@@ -277,7 +277,7 @@ class Pinky(Ghost):
 class Inky(Ghost):
     sprite = pygame.image.load(f'src/assets/ghosts/cyan_ghost/cyan_ghost.png')
     def __init__(self, game_map, pacman):
-        self.time_out = 10
+        self.time_out = 6
         super().__init__(game_map, pacman)
     
     @property
@@ -295,7 +295,7 @@ class Sue(Ghost):
     sprite = pygame.image.load(f'src/assets/ghosts/purple_ghost/purple_ghost.png')
     
     def __init__(self, game_map, pacman):
-        self.time_out = 14
+        self.time_out = 8
         super().__init__(game_map, pacman)
     
     @property
@@ -312,7 +312,7 @@ class Sue(Ghost):
 class Clyde(Ghost):
     sprite = pygame.image.load(f'src/assets/ghosts/brown_ghost/brown_ghost.png')
     def __init__(self, game_map, pacman):
-        self.time_out = 6
+        self.time_out = 4
         super().__init__(game_map, pacman)
 
     @property
