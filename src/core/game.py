@@ -140,7 +140,7 @@ class Game():
                         if self.arrow_btn_rect.collidepoint(event.pos):
                             self.game_state = "menu"
                         if self.easy_mode_btn_rect.collidepoint(event.pos):
-                            self.ghost_speed = 0.8
+                            self.ghost_speed = 1.0
                             self.game_state = "menu"
                         if self.medium_mode_btn_rect.collidepoint(event.pos):
                             self.ghost_speed = 1.4

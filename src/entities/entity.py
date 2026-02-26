@@ -15,10 +15,12 @@ def is_centered(self):
         return dist_x < tolerance and dist_y < tolerance
 
 def check_collision(self, direction):
-        next_pos = self.rect.copy()
-        next_pos.move_ip(direction * GHOST_SPEED)
+        next_x = self.pos.x + direction.x * self.speed
+        next_y = self.pos.y + direction.y * self.speed
+        
+        next_rect = pygame.Rect(next_x, next_y, self.rect.width, self.rect.height)
 
-        if next_pos.collidelist(self.game_map.walls) > -1:
+        if next_rect.collidelist(self.game_map.walls) > -1:
             return True
         
         return False

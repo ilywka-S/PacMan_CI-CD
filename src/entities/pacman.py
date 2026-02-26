@@ -69,14 +69,8 @@ class Pacman(pygame.sprite.Sprite):
             self.rect.x = -self.rect.width
 
         if not entity.check_collision(self, self.direction):
-            for _ in range(int(self.speed)):
-                if not entity.check_collision(self, self.direction):
-                    self.pos += self.direction
-                    self.rect.topleft = self.pos.x, self.pos.y
-                else:
-                    break
-
-            
+            self.pos += self.direction * self.speed
+            self.rect.topleft = round(self.pos.x), round(self.pos.y)
 
     def import_assets(self):
         path_move = 'src/assets/pacman/pacman_move.png'

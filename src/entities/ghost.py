@@ -213,7 +213,7 @@ class Ghost(pygame.sprite.Sprite, ABC):
 
     def change_speed(self):
         if self.is_dead:
-            self.speed = self.base_speed * 4
+            self.speed = self.base_speed * 3
         elif self.is_scared:
             self.speed = self.base_speed * 0.5
         else:
@@ -223,12 +223,22 @@ class Ghost(pygame.sprite.Sprite, ABC):
         return (round(self.pos[1] / TILE_SIZE), round(self.pos[0] / TILE_SIZE))
     
     def move(self):
-        if self.direction != self.next_direction:
+        if self.next_direction != pygame.Vector2(0, 0) and self.direction != self.next_direction:
+            old_pos = self.pos.copy()
+            old_rect_topleft = self.rect.topleft
+
+            current_tile_x = (self.rect.centerx // TILE_SIZE) * TILE_SIZE
+            current_tile_y = (self.rect.centery // TILE_SIZE) * TILE_SIZE
+
+            self.pos.x = current_tile_x
+            self.pos.y = current_tile_y
+            self.rect.topleft = (self.pos.x, self.pos.y)
+
             if not entity.check_collision(self, self.next_direction):
-                self.pos.x = round(self.pos.x / TILE_SIZE) * TILE_SIZE
-                self.pos.y = round(self.pos.y / TILE_SIZE) * TILE_SIZE
-                
                 self.direction = self.next_direction
+            else:
+                self.pos = old_pos
+                self.rect.topleft = old_rect_topleft
 
         if self.rect.right < 0:
             self.pos.x = WIDTH
@@ -239,8 +249,11 @@ class Ghost(pygame.sprite.Sprite, ABC):
 
         if not entity.check_collision(self, self.direction):
             self.pos += self.direction * self.speed
+        else:
+            self.pos.x = (self.rect.centerx // TILE_SIZE) * TILE_SIZE
+            self.pos.y = (self.rect.centery // TILE_SIZE) * TILE_SIZE
         
-        self.rect.topleft = self.pos.x, self.pos.y
+        self.rect.topleft = round(self.pos.x), round(self.pos.y)
 
 
 #Pinky, Inky, Sue, Clyde
