@@ -84,7 +84,18 @@ class Game():
         self.arrow_btn_rect = self.arrow_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 150))
 
         self.volume_slider = VolumeSlider(center_x=WIDTH // 2, center_y=HEIGHT // 2 + 90)
-        
+
+        self.losepage_img = pygame.image.load('src/assets/interface/lose_page/lose_menu.png').convert_alpha()
+        self.losepage_img = pygame.transform.scale(self.losepage_img, (WIDTH, HEIGHT))
+
+        self.winpage_img = pygame.image.load('src/assets/interface/win_page/win_menu.png').convert_alpha()
+        self.winpage_img = pygame.transform.scale(self.winpage_img, (WIDTH, HEIGHT))
+
+        self.again_btn_img = pygame.image.load('src/assets/interface/again_button/again_button.png').convert_alpha()
+        self.again_btn_rect = self.again_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 78))
+
+        self.exit_btn_img = pygame.image.load('src/assets/interface/exit_button/exit_button.png').convert_alpha()
+        self.exit_btn_rect = self.exit_btn_img.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 125))
 
     def play_death_animation(self):
         for frame in self.player.animations["death"]:
@@ -139,13 +150,19 @@ class Game():
                         if self.arrow_btn_rect.collidepoint(event.pos):
                             self.game_state = "menu"
                         if self.easy_mode_btn_rect.collidepoint(event.pos):
-                            self.ghost_speed = 1.0
+                            self.ghost_speed = 0.8
                             self.game_state = "menu"
                         if self.medium_mode_btn_rect.collidepoint(event.pos):
                             self.ghost_speed = 1.4
                             self.game_state = "menu"
                         if self.hard_mode_btn_rect.collidepoint(event.pos):
                             self.ghost_speed = 2.0
+                            self.game_state = "menu"
+                    elif self.game_state in ("win", "lose"):
+                        if self.again_btn_rect.collidepoint(event.pos):
+                            self.init_game()
+                            self.game_state = "game"
+                        elif self.exit_btn_rect.collidepoint(event.pos):
                             self.game_state = "menu"
 
                     elif self.game_state == "game":
@@ -171,6 +188,16 @@ class Game():
                 self.screen.blit(self.hard_mode_btn_img, self.hard_mode_btn_rect)
                 self.screen.blit(self.arrow_btn_img, self.arrow_btn_rect)
                 self.volume_slider.draw(self.screen)
+            
+            elif self.game_state == "win":
+                self.screen.blit(self.winpage_img, (0, 0))
+                self.screen.blit(self.again_btn_img, self.again_btn_rect)
+                self.screen.blit(self.exit_btn_img, self.exit_btn_rect)
+
+            elif self.game_state == "lose":
+                self.screen.blit(self.losepage_img, (0, 0))
+                self.screen.blit(self.again_btn_img, self.again_btn_rect)
+                self.screen.blit(self.exit_btn_img, self.exit_btn_rect)
 
             elif self.game_state == "game":
                 if not self.paused:
@@ -202,7 +229,7 @@ class Game():
                             pygame.time.delay(300)
 
                             if self.player.lives <= 0:
-                                self.game_state = "menu"
+                                self.game_state = "lose"
                             else:
                                 entity.reset_position(self.player)
                                 for ghost in self.ghosts_group:
@@ -211,6 +238,9 @@ class Game():
                                     ghost.is_scared = False 
                                     ghost.path = []
                                     entity.reset_position(ghost)
+                    
+                    if all(pellet.eaten for pellet in self.objects.pellets):
+                        self.game_state = "win"
 
                 self.screen.fill(BLACK)
                 self.game_map.draw_map(self.screen)
@@ -219,6 +249,7 @@ class Game():
                 for ghost in self.ghosts_group:
                     self.screen.blit(ghost.image, ghost.rect.move(0, MAP_OFFSET_Y))
                 self.draw_score()
+                
 
                 if self.paused:
                     self.pause_menu.draw(self.screen)  
